@@ -31,7 +31,7 @@ Outils:
 
 Utilisation de l’outils  *netdiscover*   ( https://www.kali.org/tools/netdiscover/ )  pour pouvoir récupérer l’adresse ip de la machine cible.
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image.png)
+![image.png](./Image/netdiscover_vd.png)
 
 ## Etape 2 : Scan de port sur la machine cible
 
@@ -49,14 +49,11 @@ sudo nmap -sV -sC -O -T5 -p- -oN discover.txt 192.168.56.104
 # -p-  -> Test tous les ports
 # -oN  -> Ecris le résultat dans output.txt
 ```
-
-[discover.txt](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/discover.txt)
-
   
 
 ! le port 2375 est ouvert que pour le mode esay ! 
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%201.png)
+![image.png](./Image/nmap_vd.png)
 
 → Pour Résumer:
 
@@ -64,7 +61,7 @@ sudo nmap -sV -sC -O -T5 -p- -oN discover.txt 192.168.56.104
 | --- | --- | --- | --- | --- |
 | 22 | ssh | OpenSSH | Open |  |
 | 8000 | http | Apache httpd | Open | On peux remarqué que wordpress est utilisé |
-| 2375 | dockerd | Api Docker | Open | daemon Docker (only easy |
+| 2375 | dockerd | Api Docker | Open | daemon Docker (only easy ) |
 
 <aside>
 ⚠️
@@ -114,7 +111,7 @@ image ls   →  Commande Docker qui liste les images disponible sur l’hôte
 
 L'image montre la page Docker Hub du projet jeroenpeeters/docker-ssh. C'est un serveur SSH conçu pour les conteneurs Docker qui permet d'accéder facilement aux conteneurs via SSH
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%202.png)
+![image.png](./Image/dockerhub_vd.png)
 
 Command qui liste les conteneur de l’hôte
 
@@ -151,7 +148,7 @@ Adresse IP en local Docker
 
 ### Schéma détailler sur le fonctionnement du système docker de la cible et du fonctionnement de docker en générale
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%203.png)
+![image.png](./Image/infra_docker_vd.png)
 
 ---
 
@@ -167,7 +164,7 @@ wpscan  --url http://192.168.56.104:8000 -e u,p
 - u  → Énumère les utilisateurs WordPress
 - p  → Enumère les plugins installés pour vérifier leur présence et détecter ceux qui pourraient être vulnérable
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%204.png)
+![image.png](./Image/result_wp_vd.png)
 
 <aside>
 ⚠️
@@ -182,7 +179,7 @@ Wpscan nous trouve un utilisateur = bob
 wpscan --url http://192.168.56.104:8000 -U bob -P /usr/share/wordlist/rockyou.txt
 ```
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%205.png)
+![image.png](./Image/brute_force_vd.png)
 
 Et nous obtenons le login /mdp 
 
@@ -197,19 +194,19 @@ Nous voila sur la page admin du WordPress et nous obtenons nôtre premier flag (
 
 flag_1{2aa11783d05b6a329ffc4d2a1ce037f46162253e55d53764a6a7e998}
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%206.png)
+![image.png](./Image)
 
 ## Etape 5 : Injecter une backdoor dans le wordpress
 
 Pour sa nous allons modifier le code  <? php ?>  dans la sidebarre →Appearance→Editor→404Template par une un reverse shell php file qu’on récupère sur github 
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%207.png)
+![image.png](./Image/inject_php_vd.png)
 
 Nous avons plus qu’a écouter sur le port 4444 et lance la page où est upload le reverse shell
 
 [http://192.168.56.104:8000/wp-content/themes/twentyseventeen/404.php](http://192.168.56.104:8000/wp-content/themes/twentyseventeen/404.php)
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%208.png)
+![image.png](./Image/shell_nc_vd.png)
 
 On récupère donc un shell avec le compte **www-data** qui est un compte dedié  aux serveur web et qui a des droits limité
 
@@ -225,7 +222,7 @@ On récupère bien l’identifiant de la partie recon Docker
 
 Dans le fichier de config   /var/www/html/wp-config.php  on peux retrouver le nom d’utilisateur et le mot de passe d’un utilisateur
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%209.png)
+![image.png](./Image/bdd_vd.png)
 
 Au final on retrouve rien d’intéressant sur le conteneur wordpress ( le shell est utile si on utilise protfwd avec metasploit ) 
 
@@ -268,9 +265,9 @@ Au final on retrouve rien d’intéressant sur le conteneur wordpress ( le shell
 
 1.  On ajoute notre charge en tant que plugin wordpress
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%2010.png)
+![image.png](./Image/wp_plugin_vd.png)
 
-![Le script nous dis qu’il est bien fonctionnel](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%2011.png)
+![Le script nous dis qu’il est bien fonctionnel](./Image/activation_plugin_vd.png)
 
 Le script nous dis qu’il est bien fonctionnel
 
@@ -312,7 +309,7 @@ Le plugin agit agit aussi comme un proxy:
 
  
 
-![schema_SOCKS.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/schema_SOCKS.png)
+![schema_SOCKS.png](./Image/schema_SOCKS_vd.png)
 
 ---
 
@@ -322,8 +319,7 @@ Le plugin agit agit aussi comme un proxy:
 
 ### Nous voila enfin connecter en ssh sur un autre conteneur non accessible
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%2012.png)
-
+![image.png](./Image/resultat%20_ssh_conteneur_vd.png)
 ---
 
 ## Escalade de privilège Docker
@@ -362,7 +358,7 @@ On peut remarquer que se conteneur a accès a  /var/run/docker.sock  qui est uti
 - J’ouvre un server web avec python sur ma machine et je récupère le zip sur le conteneur
     - 
         
-        ![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%2013.png)
+        ![image.png](./Image/wget_docker_ci_vd.png)
         
 - Je dézip docker.tar.gz
     - 
@@ -412,4 +408,4 @@ docker -H unix:///var/run/docker.sock run --rm  -it -v /:/host wordpress chroot 
 
 Et on obtiens le flag en hard {d867a73c70770e73b65e6949dd074285dfdee80a8db333a7528390f6}
 
-![image.png](Vulnerable%20Docker%201%2015854f01b91580a3a889eb699a03fb90/image%2014.png)
+![image.png](./Image/flag_finale_vd.png)
